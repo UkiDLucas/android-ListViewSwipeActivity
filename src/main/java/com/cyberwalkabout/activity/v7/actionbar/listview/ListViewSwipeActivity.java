@@ -14,7 +14,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 /**
  * @author Uki D. Lucas
@@ -22,7 +21,7 @@ import android.widget.Toast;
  *         with horizontal swipe detection
  *         and touch/tap on item detection.
  */
-public class ListViewSwipeActivity extends ActionBarActivity {
+public abstract class ListViewSwipeActivity extends ActionBarActivity {
 
       private static final String TAG = ListViewSwipeActivity.class.getSimpleName();
       private ListView listView;
@@ -33,45 +32,18 @@ public class ListViewSwipeActivity extends ActionBarActivity {
       final boolean RIGHT_SWIPE = true;
       final boolean LEFT_SWIPE = false;
 
-      public ListView getListView() {
-            return listView;
-      }
+      /**
+       * Implement this method to return your Activity ListView.
+       */
+      public abstract ListView getListView();
 
-      public void getSwipeItem(boolean isRightSwipe, int itemSwiped) {
-            Toast.makeText(this,
-                  "Detected " + (isRightSwipe ? "right-to-left" : "left-to-right") + " swipe.",
-                  Toast.LENGTH_LONG).show();
-      }
-
-      public void onItemClickListener(ListAdapter adapter, int position) {
-
-            Toast.makeText(this,
-                  "Detected a touch/tap on item in position " + position,
-                  Toast.LENGTH_LONG).show();
-
-      }
+      public abstract void onItemClickListener(ListAdapter adapter, int position);
 
       @Override
       protected void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             String tag = TAG + " onCreate()";
-
-            DisplayMetrics dm = getResources().getDisplayMetrics();
-
-            int screenWidth = dm.widthPixels;
-            int screenDensity = dm.densityDpi;
-            Log.i(tag, "screenDensity = " + screenDensity);
-            Log.i(tag, "screenWidth = " + screenWidth);
-
-            MIN_HORIZONTAL_SWIPE = screenWidth / 4; // quarter screen
-
-            MAX_VERTICAL_SWIPE = (int) (dm.densityDpi / 2); // 0.5 inch
-
-            MIN_HORIZONTAL_VELOCITY = (int) (200.0f * dm.densityDpi / 160.0f + 0.5);
-
-            Log.i(tag, "MIN_HORIZONTAL_SWIPE = " + MIN_HORIZONTAL_SWIPE);
-            Log.i(tag, "MAX_VERTICAL_SWIPE = " + MAX_VERTICAL_SWIPE);
-            Log.i(tag, "MIN_HORIZONTAL_VELOCITY = " + MIN_HORIZONTAL_VELOCITY);
+            setDeviceDimensions(tag);
       }
 
       @Override
@@ -81,8 +53,29 @@ public class ListViewSwipeActivity extends ActionBarActivity {
             if (listView == null) {
                   new Throwable("ListView is not provided.");
             }
-
             listView.setOnTouchListener(getOnTouchListener());
+      }
+
+      /**
+       * This needs to happen only once, so we will call it in onCreate().
+       */
+      private void setDeviceDimensions(String tag) {
+            DisplayMetrics dm = getResources().getDisplayMetrics();
+
+            int screenWidth = dm.widthPixels;
+            int screenDensity = dm.densityDpi;
+            Log.i(tag, "screenDensity = " + screenDensity);
+            Log.i(tag, "screenWidth = " + screenWidth);
+
+            MIN_HORIZONTAL_SWIPE = (int) screenWidth / 4; // quarter screen
+
+            MAX_VERTICAL_SWIPE = (int) (screenDensity / 2); // 0.5 inch
+
+            MIN_HORIZONTAL_VELOCITY = (int) (200.0f * screenDensity / 160.0f + 0.5);
+
+            Log.i(tag, "MIN_HORIZONTAL_SWIPE = " + MIN_HORIZONTAL_SWIPE);
+            Log.i(tag, "MAX_VERTICAL_SWIPE = " + MAX_VERTICAL_SWIPE);
+            Log.i(tag, "MIN_HORIZONTAL_VELOCITY = " + MIN_HORIZONTAL_VELOCITY);
       }
 
       private View.OnTouchListener getOnTouchListener() {
@@ -95,17 +88,23 @@ public class ListViewSwipeActivity extends ActionBarActivity {
             };
       }
 
-      private void myOnItemClick(int position) {
-            String tag = TAG + "myOnItemClick";
-            if (position < 0) {
+      /**
+       * Implement this method to handle single touch events.
+       */
+      private void onItemTap(int itemTouched) {
+            String tag = TAG + "onItemTap";
+            if (itemTouched < 0) {
                   Log.i(tag, "Item clicked is outside ListView area.");
                   return;
             }
-
-            Log.i(tag, "Tap detected on item " + position);
-            onItemClickListener(listView.getAdapter(), position);
-
+            Log.i(tag, "Tap detected on item " + itemTouched);
+            onItemClickListener(listView.getAdapter(), itemTouched);
       }
+
+      /**
+       * Implement this method to handle detected swipe events.
+       */
+      public abstract void onSwipeDetected(boolean isRightSwipe, int itemSwiped);
 
       private class TouchAndSwipeGestureListener extends SimpleOnGestureListener {
 
@@ -116,7 +115,7 @@ public class ListViewSwipeActivity extends ActionBarActivity {
             public boolean onSingleTapUp(MotionEvent e) {
 
                   int pos = listView.pointToPosition((int) e.getX(), (int) e.getY());
-                  myOnItemClick(pos);
+                  onItemTap(pos);
                   return true;
             }
 
@@ -168,14 +167,15 @@ public class ListViewSwipeActivity extends ActionBarActivity {
                   }
 
                   if (verticalSwipe < 0) {
-                        getSwipeItem(LEFT_SWIPE, itemSwiped);
+                        onSwipeDetected(LEFT_SWIPE, itemSwiped);
                   }
                   else {
-                        getSwipeItem(RIGHT_SWIPE, itemSwiped);
+                        onSwipeDetected(RIGHT_SWIPE, itemSwiped);
                   }
-
-                  return false;
+                  // If you got this far it means Swipe/Fling was detected.
+                  return true;
             }
 
       }
+
 }

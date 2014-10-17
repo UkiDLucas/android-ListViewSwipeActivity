@@ -8,25 +8,26 @@ import android.widget.ListView;
 
 public class MainActivity extends ListViewSwipeActivity {
 
-      ListView booksListView;
+      ListView listView;
 
       @Override public ListView getListView() {
-            return super.getListView();
+
+            return listView;
       }
 
-      @Override public void getSwipeItem(boolean isRightSwipe, int itemSwiped) {
-            super.getSwipeItem(isRightSwipe, itemSwiped);
+      @Override public void onSwipeDetected(boolean isRightSwipe, int itemSwiped) {
+
+            //Toast.makeText(this, "Detected " + (isRightSwipe ? "right-to-left" : "left-to-right") + " swipe.", Toast.LENGTH_LONG).show();
       }
 
       @Override public void onItemClickListener(ListAdapter adapter, int position) {
-            super.onItemClickListener(adapter, position);
-
+            //Toast.makeText(this, "Detected a touch/tap on item in position " + position, Toast.LENGTH_LONG).show();
       }
 
       @Override
       protected void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            setContentView(R.layout.activity_main);
+            setContentView(R.layout.list_activity_main);
       }
 
       @Override
