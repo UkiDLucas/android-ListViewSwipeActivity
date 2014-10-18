@@ -171,7 +171,7 @@ public abstract class ListViewSwipeActivity extends ActionBarActivity {
             return false;
          }
 
-         if (verticalSwipe < 0) {
+         if (verticalSwipe > 0) {
             onSwipeLeftToRight(itemSwiped);
          }
          else {
