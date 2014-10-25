@@ -64,9 +64,11 @@ public abstract class ListViewSwipeActivity extends ActionBarActivity {
       DisplayMetrics dm = getResources().getDisplayMetrics();
 
       int screenWidth = dm.widthPixels;
+      int screenHeight = dm.heightPixels;
       int screenDensity = dm.densityDpi;
       Log.i(tag, "screenDensity = " + screenDensity);
       Log.i(tag, "screenWidth = " + screenWidth);
+      Log.i(tag, "screenHeight = " + screenHeight);
 
       // if you swipe less than a quarter of screen width, I will not consider it a swipe
       HORIZONTAL_SWIPE = (int) screenWidth / 4; // quarter screen
